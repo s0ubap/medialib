@@ -1,20 +1,22 @@
+from globals import _simulateMode
+from globals import _logger
 import os
-import logging
 import subliminal
 import babelfish
 
 _cachePath = '/home/s0ubap/medialib/_cache/'
 
-_logger = logging.getLogger("mediaLib")
-
 #===============================================================================
 #===============================================================================
-def downloadSubtitles(path_, simulateMode_) :
+def downloadSubtitles(path_) :
 	"""Download all subtitles in the given path
-	
+
 	:param String path_
 	"""
-	if simulateMode_ :
+	
+	_logger.info('*** START DOWNLOADING SUBTITLES ***')
+
+	if _simulateMode :
 		return
 	
 	# configure the cache
@@ -30,22 +32,23 @@ def downloadSubtitles(path_, simulateMode_) :
 	subs = subliminal.download_best_subtitles(videos, {babelfish.Language('eng')})
 
 #===============================================================================
-#===============================================================================	
-def scanSubtitleLanguages(videoPath_, subExtensions_):
-    """Search for subtitles with alpha2 extension from a video `path` and return their language
-    :param string path: path to the video
-    :return: found subtitle languages
-    :rtype: set
-    """
-    language_extensions = tuple('.' + c for c in babelfish.language_converters['alpha2'].codes)
-    dirpath, filename = os.path.split(videoPath_)
-    subtitles = set()
-    for p in os.listdir(dirpath):
-        if p.startswith(os.path.splitext(filename)[0]) and p.endswith(subExtensions_):
-            if os.path.splitext(p)[0].endswith(language_extensions):
-                subtitles.add(babelfish.Language.fromalpha2(os.path.splitext(p)[0][-2:]))
-            else:
-                subtitles.add(babelfish.Language('und'))
-    return subtitles
+#===============================================================================
+def scanSubtitleLanguages(videoPath_, subExtensions_) :
+	"""Search for subtitles with alpha2 extension from a video `path` and return their language
+	:param string path: path to the video
+	:return: found subtitle languages
+	:rtype: set
+	"""
+	
+	language_extensions = tuple('.' + c for c in babelfish.language_converters['alpha2'].codes)
+	dirpath, filename = os.path.split(videoPath_)
+	subtitles = set()
+	for p in os.listdir(dirpath):
+		if p.startswith(os.path.splitext(filename)[0]) and p.endswith(subExtensions_):
+			if os.path.splitext(p)[0].endswith(language_extensions):
+				subtitles.add(babelfish.Language.fromalpha2(os.path.splitext(p)[0][-2:]))
+			else:
+				subtitles.add(babelfish.Language('und'))
+	return subtitles
 
 

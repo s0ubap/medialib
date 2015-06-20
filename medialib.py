@@ -1,10 +1,10 @@
+from globals import _logger, _mediaPath, _seriesDir
 import os
-import logging
-import logging
 import fileTools
 import subliminal
 import subtitles
 import babelfish
+import downloader
 from pytvdbapi import api
 
 #===============================================================================
@@ -12,33 +12,21 @@ from pytvdbapi import api
 #===============================================================================
 _scanPath = ur'/home/s0ubap/torrent/completed/'
 _tempPath = ur'/mnt_wd1/_mediatemp/'
-_mediaPath = ur'/mnt_wd1/medias'
-_cachePath = ur'/home/s0ubap/medialib/_cache/'
+_mediaPath = ur'/mnt_wd1/medias/'
 _seriesDir = ur'shows/'
 _moviesDir = ur'movies/'
-_simulateMode = False
 
 _videoExtensions = ('.avi', '.mp4', '.mkv')
 _subExtensions = ('.srt', '.sub')
 
 #===============================================================================
-# Loggers
-#===============================================================================
-_logger = logging.getLogger("mediaLib")
-_logger.setLevel(logging.DEBUG)
-_handler = logging.StreamHandler()
-_handler.setLevel(logging.DEBUG)
-_logger.addHandler(_handler)
-
-_subliminalLogger = logging.getLogger('subliminal')
-_subliminalLogger.setLevel(logging.DEBUG)
-_subliminalHandler = logging.StreamHandler()
-_subliminalHandler.setLevel(logging.DEBUG)
-_subliminalLogger.addHandler(_subliminalHandler)
-
-#===============================================================================
 #===============================================================================
 def formatEpisodePath( episode_ ) :
+	"""Format an episode name: Series - SxxExx - Title
+
+	:param String episode_: episode path
+	:return String: formatted episode path
+	"""
 	extension = os.path.splitext(episode_.name)[1]
 	episodeFilePath = episode_.series + '/' + 'Season '
 	if (episode_.season < 10) :
@@ -51,29 +39,28 @@ def formatEpisodePath( episode_ ) :
 		episodeFilePath += '0'
 	episodeFilePath += (str(episode_.episode) + ' - ' + episode_.title + extension)
 	return episodeFilePath
-	
-
 
 #===============================================================================
 #===============================================================================
-def moveAndRenameMovie(movie_, destDirPath_, _ext) :
+def moveAndRenameMovie(movie_, destDirPath_, _ext) :		
 	"""Move and rename an movie
-	
+
 	:param episode_: Movie to process.
 	:type episode_: class subliminal.video.Movie.
 	:param String destDirPath_: Path of the directory to move the Movie to.
 	:param String _ext: Extension of the Movie file.
 	"""
+
 	# Check episode informations
 	if ( episode_.title is None ) :
 		_logger.error('No title found while trying to move and rename file: \'%s\'', movie_.name)
 		return
 
 #===============================================================================
-#===============================================================================		
+#===============================================================================
 def moveAndRenameEpisode(episode_, destDirPath_) :
 	"""Move and rename an episode
-	
+
 	:param episode_: Episode to process.
 	:type episode_: class subliminal.video.Episode.
 	:param String destDirPath_: Path of the directory to move the episode to.
@@ -94,17 +81,20 @@ def moveAndRenameEpisode(episode_, destDirPath_) :
 		return
 
 	episodeFilePath = os.path.join(os.path.join(destDirPath_, _seriesDir), formatEpisodePath(episode_))
-	fileTools.moveFile(episode_.name, episodeFilePath, _simulateMode)
-
+	fileTools.moveFile(episode_.name, episodeFilePath)
+	
 #===============================================================================
 #===============================================================================
 def moveAndRenameDownloadedVideos(sourceDirPath_, destDirPath_) :
 	"""Move all videos (movies and episodes) from the source path to the destination
 	path, and rename them.
-	
+
 	:param String sourceDirPath_
 	:param String destDirPath_
 	"""
+
+	_logger.info('*** START MOVING AND RENAMING DOWNLOADED VIDEOS ***')
+	
 	if (os.path.isdir(sourceDirPath_)) :
 		# Parse all files
 		for dir, dirs, files in os.walk(sourceDirPath_) :
@@ -130,15 +120,23 @@ def moveAndRenameDownloadedVideos(sourceDirPath_, destDirPath_) :
 						elif (isinstance(video, subliminal.video.Movie)) :
 							moveAndRenameMovie(video, destDirPath_);
 						else :
-							_logger.warning('Bad video type, skipping file. (%s)', filePath)
+							_logger.info('Bad video type, skipping file. (%s)', filePath)
 				else :
 					_logger.info('Bad extension, skipping file. (%s)', filePath)
 	else :
 		_logger.warning('\'%s\' does not refer to an existing path.', sourceDirPath_)
 
 #===============================================================================
-#===============================================================================	
+#===============================================================================
 def moveVideosAndSubtitles(sourceDirPath_, destDirPath_) :
+	"""Move videos and subtitles (if exist)
+
+	:param String sourceDirPath_
+	:param String destDirPath_
+	"""
+
+	_logger.info('*** START MOVING VIDEOS AND SUBTITLES ***')
+	
 	if (os.path.isdir(sourceDirPath_)) :
 		for dir, dirs, files in os.walk(sourceDirPath_) :
 			localDir = dir[len(sourceDirPath_):]
@@ -158,13 +156,13 @@ def moveVideosAndSubtitles(sourceDirPath_, destDirPath_) :
 					
 					# If subs found, then move video
 					hasSubFiles = babelfish.Language('eng') in subFileLanguages
-					hasEmbeddedSub = babelfish.Language('eng') in video.subtitle_languages
+					hasEmbeddedSub = babelfish.Language('eng') in video.subtitle_languages or babelfish.Language('und') in video.subtitle_languages
 					if (hasEmbeddedSub or hasSubFiles) :
-						fileTools.transferFile(filePath, sourceDirPath_, destDirPath_, _simulateMode)
+						fileTools.transferFile(filePath, sourceDirPath_, destDirPath_)
 						
 						# Embedded subtitles?
 						if (hasEmbeddedSub) :
-							_logger.debug('Embedded ubtitles found for %s', video.name)
+							_logger.debug('Embedded subtitles found for %s', video.name)
 					
 						# If subtitles files have been found, then move
 						if (hasSubFiles) :
@@ -179,26 +177,30 @@ def moveVideosAndSubtitles(sourceDirPath_, destDirPath_) :
 									if (otherFileRoot[:len(fileRoot)] == fileRoot) :
 										# Move subtitles
 										otherFilePath = os.path.join(dir, otherFileName)
-										fileTools.transferFile(otherFilePath, sourceDirPath_, destDirPath_, _simulateMode)
+										fileTools.transferFile(otherFilePath, sourceDirPath_, destDirPath_)
 					else :
-						_logger.info('No subtitles found, skipping video. (%s)', video.name)
+						_logger.warning('No subtitles found, skipping video. (%s)', video.name)
 				
 	else :
 		_logger.warning('\'%s\' does not refer to an existing path.', sourceDirPath_)
 
+
 #===============================================================================
 #===============================================================================
 def mainFunction() :
+	# Download series
+	downloader.mainFunction()
+
 	# Rename and move downloaded videos in a temp folder
 	moveAndRenameDownloadedVideos(_scanPath, _tempPath)
 	
 	# Download subtitles
-	subtitles.downloadSubtitles(_tempPath, _simulateMode)
+	subtitles.downloadSubtitles(_tempPath)
 	
 	# Move videos and their subtitles in the final folder
 	moveVideosAndSubtitles(_tempPath, _mediaPath)
 	
 	# Delete empty directories
-	fileTools.deleteEmptyDirectories(os.path.join(_tempPath, _seriesDir), False, _simulateMode)
+	fileTools.deleteEmptyDirectories(os.path.join(_tempPath, _seriesDir), False)
 	
 mainFunction()

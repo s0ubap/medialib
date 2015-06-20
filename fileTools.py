@@ -1,8 +1,8 @@
+from globals import _simulateMode
+from globals import _logger
 import os
 import logging
 import shutil
-
-_logger = logging.getLogger("mediaLib")
 
 #===============================================================================
 #===============================================================================
@@ -13,12 +13,12 @@ def testFileExtension(filePath_, extensions_) :
 	
 #===============================================================================
 #===============================================================================
-def moveFile(srcFilePath_, destFilePath_, simulateMode_) :
+def moveFile(srcFilePath_, destFilePath_) :
 	_logger.info('Moving file:');
 	_logger.info('  From: %s', srcFilePath_)
 	_logger.info('  To: %s', destFilePath_)
 	
-	if simulateMode_ :
+	if _simulateMode :
 		return
 	
 	if (not os.path.isdir(os.path.dirname(destFilePath_))) :
@@ -28,25 +28,25 @@ def moveFile(srcFilePath_, destFilePath_, simulateMode_) :
 
 #===============================================================================
 #===============================================================================
-def deleteEmptyDirectories(path_, deletePath_, simulateMode_) :
+def deleteEmptyDirectories(path_, deletePath_) :
 	dirList = os.listdir(path_)
 	for dir in dirList :
 		dirPath = os.path.join(path_, dir)
 		if ( os.path.isdir(dirPath) ) :
-			deleteEmptyDirectories(dirPath, True, simulateMode_)
+			deleteEmptyDirectories(dirPath, True)
 	
 	if deletePath_ :
 		dirList = os.listdir(path_)
 		if (len(dirList) == 0) :
 			_logger.info('Deleting empty directory: %s', path_)
-			if not simulateMode_ :
+			if not _simulateMode :
 				os.rmdir(path_)
 		
 #===============================================================================
-#===============================================================================		
-def transferFile(filePath_, srcRootPath_, destDirPath_, simulateMode_) :
+#===============================================================================
+def transferFile(filePath_, srcRootPath_, destDirPath_) :
 	assert filePath_.startswith( srcRootPath_ )
 	localFilePath = filePath_[len(srcRootPath_):]
 	destFilePath = os.path.join(destDirPath_, localFilePath)
 	
-	moveFile(filePath_, destFilePath, simulateMode_)
+	moveFile(filePath_, destFilePath)
