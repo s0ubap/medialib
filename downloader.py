@@ -30,13 +30,17 @@ def findSerieInfos(serieName_) :
 		return None
 
 def downloadSeasonFromKickass(serieName_, season_) :
+	conn = sqlite3.connect(_dbFilePath)
+	c = conn.cursor()
+	
 	serieInfo = findSerieInfos(serieName_);
 	if not serieInfo is None and season_ < len(serieInfo) :
-		for episode in range(1, len(serieInfo[episode])):
-			localDbInfo = database.getEpisodeInfo(serieName_, season_, episode);
+		for episode in range(1, len(serieInfo[season_])):
+			localDbInfo = database.getEpisodeInfo(c, serieName_, season_, episode);
 			if localDbInfo is None :
 				downloadEpisodeFromKickass(serieName_, season_, episode)
-	
+
+	conn.close()
 		
 def downloadEpisodeFromKickass(serieName_, season_, episode_) :
 	search = serieName_ + ' ' + formatSeasonEpisode(season_, episode_) + ' 720p'
@@ -72,6 +76,7 @@ def downloadFromRSS() :
 	conn.close()
 	
 def mainFunction() :
+	#downloadSeasonFromKickass('halt and catch fire', 1)
 	downloadFromRSS()
 
 #mainFunction()
