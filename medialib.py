@@ -115,7 +115,7 @@ def moveAndRenameDownloadedVideos(sourceDirPath_, destDirPath_) :
 							if (video.title is None) :
 								db = api.TVDB("B43FF87DE395DF56")
 								result = db.search(video.series, "en")
-								video.title  = result[0][video.season][video.episode].EpisodeName
+								video.title  = unicode(result[0][video.season][video.episode].EpisodeName)
 							moveAndRenameEpisode(video, destDirPath_);
 						elif (isinstance(video, subliminal.video.Movie)) :
 							moveAndRenameMovie(video, destDirPath_);
@@ -189,7 +189,7 @@ def moveVideosAndSubtitles(sourceDirPath_, destDirPath_) :
 #===============================================================================
 def mainFunction() :
 	# Download series
-	downloader.mainFunction()
+	#downloader.mainFunction()
 
 	# Rename and move downloaded videos in a temp folder
 	moveAndRenameDownloadedVideos(_scanPath, _tempPath)
