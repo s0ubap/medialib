@@ -1,24 +1,31 @@
 import logging
 
 #===============================================================================
-# Loggers
+# _loggers
 #===============================================================================
-_logger = logging.getLogger("medialib")
-_logger.setLevel(logging.DEBUG)
+LOGGER = logging.getLogger("medialib")
+LOGGER.setLevel(logging.DEBUG)
 _handler = logging.StreamHandler()
-_handler.setLevel(logging.INFO)
-_logger.addHandler(_handler)
+_handler.setLevel(logging.DEBUG)
+LOGGER.addHandler(_handler)
 
-_subliminalLogger = logging.getLogger('subliminal')
-_subliminalLogger.setLevel(logging.DEBUG)
+SUBLIMINAL_LOGGER = logging.getLogger('subliminal')
+SUBLIMINAL_LOGGER.setLevel(logging.DEBUG)
 _subliminalHandler = logging.StreamHandler()
-_subliminalHandler.setLevel(logging.INFO)
-_subliminalLogger.addHandler(_subliminalHandler)
+_subliminalHandler.setLevel(logging.WARNING)
+SUBLIMINAL_LOGGER.addHandler(_subliminalHandler)
 
 #===============================================================================
 # Globals
 #===============================================================================
-_simulateMode = False
-_dbFilePath = ur'/mnt_wd1/medias/medialib.db'
-_mediaPath = ur'/mnt_wd1/medias/'
-_seriesDir = ur'shows/'
+SIMULATE_MODE = False
+DB_FILE_PATH = ur'/mnt_wd1/medias/medialib.db'
+#SCAN_PATH = ur'/home/s0ubap/torrent/completed/'
+SCAN_PATH = (ur'/mnt_wd1/torrent_completed/', ur'/home/s0ubap/torrent/completed/')
+TEMP_PATH = ur'/mnt_wd1/_mediatemp/'
+MEDIA_PATH = ur'/mnt_wd1/medias/'
+SERIES_DIR = ur'shows/'
+MOVIE_DIR = ur'movies/'
+
+VIDEO_EXTENSIONS = ('.avi', '.mp4', '.mkv')
+SUB_EXTENSIONS = ('.srt', '.sub')

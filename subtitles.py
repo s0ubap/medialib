@@ -1,5 +1,5 @@
-from globals import _simulateMode
-from globals import _logger
+from globals import SIMULATE_MODE
+from globals import LOGGER
 import os
 import subliminal
 import babelfish
@@ -14,9 +14,9 @@ def downloadSubtitles(path_) :
 	:param String path_
 	"""
 	
-	_logger.info('*** START DOWNLOADING SUBTITLES ***')
+	LOGGER.info('*** START DOWNLOADING SUBTITLES ***')
 
-	if _simulateMode :
+	if SIMULATE_MODE :
 		return
 	
 	# configure the cache
@@ -26,7 +26,7 @@ def downloadSubtitles(path_) :
 	
 	# scan for videos in the folder and their subtitles
 	upath = unicode(path_)
-	videos = subliminal.scan_videos([upath], subtitles=True, embedded_subtitles=True)
+	videos = subliminal.scan_videos(upath, subtitles=True, embedded_subtitles=True)
 	
 	# download
 	subs = subliminal.download_best_subtitles(videos, {babelfish.Language('eng')})

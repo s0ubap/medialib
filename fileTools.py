@@ -1,5 +1,5 @@
-from globals import _simulateMode
-from globals import _logger
+from globals import *
+from globals import LOGGER
 import os
 import logging
 import shutil
@@ -14,11 +14,11 @@ def testFileExtension(filePath_, extensions_) :
 #===============================================================================
 #===============================================================================
 def moveFile(srcFilePath_, destFilePath_) :
-	_logger.info('Moving file:');
-	_logger.info('  From: %s', srcFilePath_)
-	_logger.info('  To: %s', destFilePath_)
+	LOGGER.debug('Moving file:');
+	LOGGER.debug('  From: %s', srcFilePath_)
+	LOGGER.debug('  To: %s', destFilePath_)
 	
-	if _simulateMode :
+	if SIMULATE_MODE :
 		return
 	
 	if (not os.path.isdir(os.path.dirname(destFilePath_))) :
@@ -38,8 +38,8 @@ def deleteEmptyDirectories(path_, deletePath_) :
 	if deletePath_ :
 		dirList = os.listdir(path_)
 		if (len(dirList) == 0) :
-			_logger.info('Deleting empty directory: %s', path_)
-			if not _simulateMode :
+			LOGGER.info('Deleting empty directory: %s', path_)
+			if not SIMULATE_MODE :
 				os.rmdir(path_)
 		
 #===============================================================================

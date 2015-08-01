@@ -1,4 +1,4 @@
-from globals import _logger, _mediaPath, _seriesDir, _dbFilePath
+from globals import LOGGER, MEDIA_PATH, SERIES_DIR, DB_FILE_PATH
 import sqlite3
 import os
 import subliminal
@@ -26,7 +26,7 @@ def createDB(dbFilePath_) :
 		return
 		#os.remove(dbFilePath_)
 
-	_logger.info('Creating database file: %s', dbFilePath_)
+	LOGGER.info('Creating database file: %s', dbFilePath_)
 	command = """create table series (id INTEGER PRIMARY KEY,
 				name VARCHAR(50),
 				title VARCHAR(255),
@@ -35,7 +35,7 @@ def createDB(dbFilePath_) :
 				sub_en INTEGER,
 				sub_fr INTEGER,
 				downloading INTEGER)"""
-	_logger.debug(command)
+	LOGGER.debug(command)
 		
 	conn = sqlite3.connect(dbFilePath_)
 	c = conn.cursor()
@@ -53,8 +53,8 @@ def updateSeriesDB(dbFilePath_, seriesPath_) :
 	conn = sqlite3.connect(dbFilePath_)
 	c = conn.cursor()
 	
-	_logger.info('*** START UPDATING DATABASE ***')
-	videos = subliminal.scan_videos([seriesPath_], True, True)
+	LOGGER.info('*** START UPDATING DATABASE ***')
+	videos = subliminal.scan_videos(seriesPath_, True, True)
 	
 	for video in videos :
 		subEn = babelfish.Language('eng') in video.subtitle_languages
@@ -75,7 +75,7 @@ def updateEpisode(cursor_, video_, subEng_, subFr_, downloading) :
 	:param bool subFr_: is there an associated french sub for this episode
 	:param bool downloading: is this episode currently downloading
 	"""
-	_logger.info('Updating database for %s', video_.name)
+	LOGGER.info('Updating database for %s', video_.name)
 	
 	command = 'SELECT id FROM series WHERE name=\'%s\' AND season=%d AND episode=%d' % (video_.series, video_.season, video_.episode)
 	cursor_.execute(command)
@@ -107,8 +107,8 @@ def getEpisodeInfo(cursor_, serie_, season_, episode_) :
 #===============================================================================
 #===============================================================================
 def mainFunction() :
-	createDB(_dbFilePath)
-	#updateSeriesDB(_dbFilePath, ur'/mnt_wd1/medias/shows/Bored to Death/Season 01')
-	updateSeriesDB(_dbFilePath, _mediaPath + _seriesDir)
+	createDB(DB_FILE_PATH)
+	#updateSeriesDB(DB_FILE_PATH, ur'/mnt_wd1/medias/shows/Bored to Death/Season 01')
+	updateSeriesDB(DB_FILE_PATH, MEDIA_PATH + SERIES_DIR)
 	
 #mainFunction()

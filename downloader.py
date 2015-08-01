@@ -1,6 +1,6 @@
 from pytvdbapi import api
 from KickassAPI import Search, CATEGORY, ORDER
-from globals import _dbFilePath, _logger
+from globals import DB_FILE_PATH, LOGGER
 import feedparser
 import transmissionrpc
 import database
@@ -30,7 +30,7 @@ def findSerieInfos(serieName_) :
 		return None
 
 def downloadSeasonFromKickass(serieName_, season_) :
-	conn = sqlite3.connect(_dbFilePath)
+	conn = sqlite3.connect(DB_FILE_PATH)
 	c = conn.cursor()
 	
 	serieInfo = findSerieInfos(serieName_);
@@ -54,9 +54,9 @@ def downloadFromMagnetLink(link_) :
 	torrent = tc.add_torrent(link_)
 
 def downloadFromRSS() :
-	_logger.info('*** START DOWNLOADING SUBTITLES ***')
+	LOGGER.info('*** START DOWNLOADING SUBTITLES ***')
 	
-	conn = sqlite3.connect(_dbFilePath)
+	conn = sqlite3.connect(DB_FILE_PATH)
 	c = conn.cursor()
 	
 	feed = feedparser.parse('http://showrss.info/rss.php?user_id=244944&hd=null&proper=null')
